@@ -11,11 +11,13 @@ gui.Name = "VorgFaBoxBeta"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+-- Visual Elements
 local currentHitboxVisual = nil
 local football = nil
 local hitbox = nil
 local heartbeatConnection = nil
 
+-- ████████ MAIN GUI ████████
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 350, 0, 220)
@@ -27,6 +29,7 @@ mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = gui
 
+-- Neon Border Effect
 local borderEffect = Instance.new("Frame")
 borderEffect.Name = "BorderEffect"
 borderEffect.Size = UDim2.new(1, 10, 1, 10)
@@ -37,6 +40,7 @@ borderEffect.BorderSizePixel = 0
 borderEffect.ZIndex = -1
 borderEffect.Parent = mainFrame
 
+-- Border Animation
 coroutine.wrap(function()
     local angle = 0
     while true do
@@ -46,6 +50,7 @@ coroutine.wrap(function()
     end
 end)()
 
+-- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 30)
@@ -63,7 +68,8 @@ titleText.Font = Enum.Font.SciFi
 titleText.TextSize = 18
 titleText.BackgroundTransparency = 1
 titleText.Parent = titleBar
-Ñ
+
+-- Width Control
 local widthLabel = Instance.new("TextLabel")
 widthLabel.Name = "WidthLabel"
 widthLabel.Size = UDim2.new(0.8, 0, 0, 25)
@@ -87,6 +93,7 @@ widthBox.BorderSizePixel = 0
 widthBox.Font = Enum.Font.Code
 widthBox.Parent = mainFrame
 
+-- Height Control
 local heightLabel = widthLabel:Clone()
 heightLabel.Name = "HeightLabel"
 heightLabel.Position = UDim2.new(0.1, 0, 0.35, 0)
@@ -98,6 +105,7 @@ heightBox.Name = "HeightBox"
 heightBox.Position = UDim2.new(0.7, 0, 0.35, 0)
 heightBox.Parent = mainFrame
 
+-- Apply Button
 local applyButton = Instance.new("TextButton")
 applyButton.Name = "ApplyButton"
 applyButton.Size = UDim2.new(0.6, 0, 0, 40)
@@ -110,6 +118,7 @@ applyButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
 applyButton.BorderSizePixel = 0
 applyButton.Parent = mainFrame
 
+-- Button Effects
 applyButton.MouseEnter:Connect(function()
     TweenService:Create(applyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 150, 255)}):Play()
 end)
@@ -118,6 +127,7 @@ applyButton.MouseLeave:Connect(function()
     TweenService:Create(applyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 120, 215)}):Play()
 end)
 
+-- ████████ DRAGGABLE GUI ████████
 local dragging = false
 local dragStartPos = Vector2.new(0, 0)
 local frameStartPos = UDim2.new()
@@ -152,6 +162,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- ████████ HITBOX VISUALIZATION ████████
 local function createHitboxVisual()
     -- Cleanup previous visual
     if currentHitboxVisual then
@@ -214,6 +225,7 @@ local function createHitboxVisual()
     currentHitboxVisual.Parent = workspace
 end
 
+-- ████████ APPLY CHANGES ████████
 local function applyChanges()
     local width = tonumber(widthBox.Text) or 5
     local height = tonumber(heightBox.Text) or 5
@@ -230,13 +242,13 @@ local function applyChanges()
         return
     end
 
-
+    -- Update hitbox size
     hitbox.Size = Vector3.new(width, height, width)
     
-
+    -- Update visual
     createHitboxVisual()
     
-   
+    -- Button feedback
     applyButton.Text = "CHANGES APPLIED!"
     task.wait(0.8)
     applyButton.Text = "APPLY CHANGES"
@@ -244,7 +256,7 @@ end
 
 applyButton.MouseButton1Click:Connect(applyChanges)
 
-
+-- ████████ TOGGLE GUI ████████
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.H then
         mainFrame.Visible = not mainFrame.Visible
@@ -259,4 +271,4 @@ end)
 
 -- Initialize
 gui.Parent = player:WaitForChild("PlayerGui")
-          createHitboxVisual()
+createHitboxVisual()
