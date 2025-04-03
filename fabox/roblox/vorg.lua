@@ -1,116 +1,127 @@
--- Services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
+local StarterGui = game:GetService("StarterGui")
 
--- Variables
 local player = Players.LocalPlayer
+if not player then
+    error("No se pudo obtener el jugador local.")
+end
+local playerGui = player:WaitForChild("PlayerGui")
+print("El script de la FaBox ha iniciado correctamente.")
+
 local gui = Instance.new("ScreenGui")
-gui.Name = "VorgFaBoxBeta"
+gui.Name = "Vorg LastLine Beta"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = playerGui
 
--- Visual Elements
-local currentHitboxVisual = nil
-local football = nil
-local hitbox = nil
-local heartbeatConnection = nil
+local ballGrabDistance = 30
+local autoGrabEnabled = false
+local grabCooldown = 0.05
+local discordLink = "https://discord.gg/SDshmWYCyh"
 
--- ████████ MAIN GUI ████████
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 350, 0, 220)
-mainFrame.Position = UDim2.new(0.5, -175, 0.5, -110)
+mainFrame.Size = UDim2.new(0, 300, 0, 280)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-mainFrame.BackgroundTransparency = 0.2
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+mainFrame.BackgroundTransparency = 0.15
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = gui
 
--- Neon Border Effect
-local borderEffect = Instance.new("Frame")
-borderEffect.Name = "BorderEffect"
-borderEffect.Size = UDim2.new(1, 10, 1, 10)
-borderEffect.Position = UDim2.new(0, -5, 0, -5)
-borderEffect.BackgroundColor3 = Color3.fromRGB(0, 255, 200)
-borderEffect.BackgroundTransparency = 0.8
-borderEffect.BorderSizePixel = 0
-borderEffect.ZIndex = -1
-borderEffect.Parent = mainFrame
+local borderGlow = Instance.new("ImageLabel")
+borderGlow.Name = "BorderGlow"
+borderGlow.Size = UDim2.new(1, 20, 1, 20)
+borderGlow.Position = UDim2.new(0, -10, 0, -10)
+borderGlow.Image = "rbxassetid://8992231221"
+borderGlow.ImageColor3 = Color3.fromRGB(0, 255, 200)
+borderGlow.ScaleType = Enum.ScaleType.Slice
+borderGlow.SliceCenter = Rect.new(20, 20, 280, 280)
+borderGlow.BackgroundTransparency = 1
+borderGlow.ZIndex = -1
+borderGlow.Parent = mainFrame
 
--- Border Animation
-coroutine.wrap(function()
-    local angle = 0
-    while true do
-        angle = (angle + 2) % 360
-        borderEffect.BackgroundColor3 = Color3.fromHSV(angle/360, 0.8, 1)
-        task.wait(0.016)
-    end
-end)()
-
--- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
 titleBar.Size = UDim2.new(1, 0, 0, 30)
 titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-titleBar.BackgroundTransparency = 0.5
+titleBar.BackgroundTransparency = 0.7
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
 local titleText = Instance.new("TextLabel")
 titleText.Name = "TitleText"
-titleText.Size = UDim2.new(1, 0, 1, 0)
-titleText.Text = "Vorg FaBox Beta"
+titleText.Size = UDim2.new(1, -40, 1, 0)
+titleText.Position = UDim2.new(0, 10, 0, 0)
+titleText.Text = "Vorg LastLine Beta"
 titleText.TextColor3 = Color3.fromRGB(0, 255, 200)
 titleText.Font = Enum.Font.SciFi
 titleText.TextSize = 18
+titleText.TextXAlignment = Enum.TextXAlignment.Left
 titleText.BackgroundTransparency = 1
 titleText.Parent = titleBar
 
--- Width Control
-local widthLabel = Instance.new("TextLabel")
-widthLabel.Name = "WidthLabel"
-widthLabel.Size = UDim2.new(0.8, 0, 0, 25)
-widthLabel.Position = UDim2.new(0.1, 0, 0.2, 0)
-widthLabel.Text = "Hitbox Width:"
-widthLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
-widthLabel.TextXAlignment = Enum.TextXAlignment.Left
-widthLabel.BackgroundTransparency = 1
-widthLabel.Font = Enum.Font.GothamBold
-widthLabel.Parent = mainFrame
+local discordButton = Instance.new("TextButton")
+discordButton.Name = "DiscordButton"
+discordButton.Size = UDim2.new(0, 30, 0, 30)
+discordButton.Position = UDim2.new(1, -35, 0, 5)
+discordButton.Text = "🡥"
+discordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+discordButton.Font = Enum.Font.SciFi
+discordButton.TextSize = 20
+discordButton.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+discordButton.BorderSizePixel = 0
+discordButton.Parent = titleBar
 
-local widthBox = Instance.new("TextBox")
-widthBox.Name = "WidthBox"
-widthBox.Size = UDim2.new(0.3, 0, 0, 25)
-widthBox.Position = UDim2.new(0.7, 0, 0.2, 0)
-widthBox.PlaceholderText = "5"
-widthBox.Text = "5"
-widthBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-widthBox.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-widthBox.BorderSizePixel = 0
-widthBox.Font = Enum.Font.Code
-widthBox.Parent = mainFrame
+discordButton.MouseButton1Click:Connect(function()
+    setclipboard(discordLink)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Vorg LastLine Beta",
+        Text = "Join our Discord to support us and discover more scripts!",
+        Duration = 5
+    })
+end)
 
--- Height Control
-local heightLabel = widthLabel:Clone()
-heightLabel.Name = "HeightLabel"
-heightLabel.Position = UDim2.new(0.1, 0, 0.35, 0)
-heightLabel.Text = "Hitbox Height:"
-heightLabel.Parent = mainFrame
+local hitboxContainer = Instance.new("Frame")
+hitboxContainer.Name = "HitboxContainer"
+hitboxContainer.Size = UDim2.new(1, -20, 0, 80)
+hitboxContainer.Position = UDim2.new(0, 10, 0, 40)
+hitboxContainer.BackgroundTransparency = 1
+hitboxContainer.Parent = mainFrame
 
-local heightBox = widthBox:Clone()
-heightBox.Name = "HeightBox"
-heightBox.Position = UDim2.new(0.7, 0, 0.35, 0)
-heightBox.Parent = mainFrame
+local sizeLabel = Instance.new("TextLabel")
+sizeLabel.Name = "SizeLabel"
+sizeLabel.Size = UDim2.new(0.45, 0, 0, 25)
+sizeLabel.Position = UDim2.new(0, 0, 0, 0)
+sizeLabel.Text = "FaBox Size:"
+sizeLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+sizeLabel.TextXAlignment = Enum.TextXAlignment.Left
+sizeLabel.BackgroundTransparency = 1
+sizeLabel.Font = Enum.Font.GothamBold
+sizeLabel.Parent = hitboxContainer
 
--- Apply Button
+local sizeBox = Instance.new("TextBox")
+sizeBox.Name = "SizeBox"
+sizeBox.Size = UDim2.new(0.5, 0, 0, 25)
+sizeBox.Position = UDim2.new(0.5, 0, 0, 0)
+sizeBox.PlaceholderText = "5"
+sizeBox.Text = "5"
+sizeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+sizeBox.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+sizeBox.BorderSizePixel = 1
+sizeBox.BorderColor3 = Color3.fromRGB(50, 50, 70)
+sizeBox.Font = Enum.Font.Code
+sizeBox.Parent = hitboxContainer
+
 local applyButton = Instance.new("TextButton")
 applyButton.Name = "ApplyButton"
-applyButton.Size = UDim2.new(0.6, 0, 0, 40)
-applyButton.Position = UDim2.new(0.2, 0, 0.6, 0)
-applyButton.Text = "APPLY CHANGES"
+applyButton.Size = UDim2.new(1, -20, 0, 40)
+applyButton.Position = UDim2.new(0, 10, 0, 130)
+applyButton.Text = "APLICAR HITBOX"
 applyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 applyButton.Font = Enum.Font.SciFi
 applyButton.TextSize = 16
@@ -118,157 +129,196 @@ applyButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
 applyButton.BorderSizePixel = 0
 applyButton.Parent = mainFrame
 
--- Button Effects
-applyButton.MouseEnter:Connect(function()
-    TweenService:Create(applyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 150, 255)}):Play()
-end)
+local autoGrabToggle = Instance.new("TextButton")
+autoGrabToggle.Name = "AutoGrabToggle"
+autoGrabToggle.Size = UDim2.new(1, -20, 0, 40)
+autoGrabToggle.Position = UDim2.new(0, 10, 0, 180)
+autoGrabToggle.Text = "Auto Grab (GK): OFF"
+autoGrabToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoGrabToggle.Font = Enum.Font.SciFi
+autoGrabToggle.TextSize = 16
+autoGrabToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+autoGrabToggle.BorderSizePixel = 0
+autoGrabToggle.Parent = mainFrame
 
-applyButton.MouseLeave:Connect(function()
-    TweenService:Create(applyButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 120, 215)}):Play()
-end)
+local mobileToggle = Instance.new("TextButton")
+mobileToggle.Name = "MobileToggle"
+mobileToggle.Size = UDim2.new(0, 50, 0, 50)
+mobileToggle.Position = UDim2.new(0, 10, 0, 10)
+mobileToggle.Text = "⛶"
+mobileToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+mobileToggle.Font = Enum.Font.Arial
+mobileToggle.TextSize = 30
+mobileToggle.BackgroundColor3 = Color3.fromRGB(0, 80, 140)
+mobileToggle.BorderSizePixel = 0
+mobileToggle.Visible = (UserInputService:GetPlatform() == Enum.Platform.Android or UserInputService:GetPlatform() == Enum.Platform.IOS)
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mobileToggle
+mobileToggle.Parent = gui
 
--- ████████ DRAGGABLE GUI ████████
-local dragging = false
-local dragStartPos = Vector2.new(0, 0)
-local frameStartPos = UDim2.new()
+local function createHitboxVisual(target)
+    if not target or not target.Parent or target.Parent.Name ~= "Football" then 
+        warn("El objeto 'Hitbox' no está configurado correctamente.")
+        return 
+    end
 
-local function updateFramePosition(input)
-    local delta = input.Position - dragStartPos
-    mainFrame.Position = UDim2.new(
-        frameStartPos.X.Scale,
-        math.clamp(frameStartPos.X.Offset + delta.X, 0, workspace.CurrentCamera.ViewportSize.X - mainFrame.AbsoluteSize.X),
-        frameStartPos.Y.Scale,
-        math.clamp(frameStartPos.Y.Offset + delta.Y, 0, workspace.CurrentCamera.ViewportSize.Y - mainFrame.AbsoluteSize.Y)
-    )
+    local oldVisual = workspace:FindFirstChild("FaBoxVisual_Football")
+    if oldVisual then
+        oldVisual:Destroy()
+    end
+
+    local visual = Instance.new("Part")
+    visual.Name = "FaBoxVisual_Football"
+    visual.Size = target.Size
+    visual.Transparency = 0.7
+    visual.Color = Color3.fromRGB(0, 150, 255)
+    visual.Material = Enum.Material.Neon
+    visual.Anchored = true
+    visual.CanCollide = false
+    visual.CastShadow = false
+
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if visual and target and target.Parent then
+            visual.Size = target.Size
+            visual.Position = target.Position
+            visual.Orientation = target.Orientation
+        else
+            if connection then connection:Disconnect() end
+            visual:Destroy()
+        end
+    end)
+
+    visual.Parent = workspace
 end
 
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStartPos = input.Position
-        frameStartPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        updateFramePosition(input)
-    end
-end)
-
--- ████████ HITBOX VISUALIZATION ████████
-local function createHitboxVisual()
-    -- Cleanup previous visual
-    if currentHitboxVisual then
-        currentHitboxVisual:Destroy()
-        currentHitboxVisual = nil
+local function updateAllHitboxes()
+    local existingVisual = workspace:FindFirstChild("FaBoxVisual_Football")
+    if existingVisual then
+        existingVisual:Destroy()
     end
 
-    if heartbeatConnection then
-        heartbeatConnection:Disconnect()
-        heartbeatConnection = nil
-    end
-
-    -- Find football and hitbox
-    football = workspace:FindFirstChild("Football")
-    if not football then
-        warn("Football not found!")
-        return
-    end
-    
-    hitbox = football:FindFirstChild("Hitbox")
-    if not hitbox then
-        warn("Hitbox not found in Football!")
-        return
-    end
-
-    -- Create visual part
-    currentHitboxVisual = Instance.new("Part")
-    currentHitboxVisual.Name = "FaBoxVisual"
-    currentHitboxVisual.Size = hitbox.Size
-    currentHitboxVisual.Transparency = 0.7
-    currentHitboxVisual.Color = Color3.fromRGB(0, 150, 255)
-    currentHitboxVisual.Material = Enum.Material.Neon
-    currentHitboxVisual.Anchored = true
-    currentHitboxVisual.CanCollide = false
-    currentHitboxVisual.CastShadow = false
-
-    -- Add outline effect
-    local surfaceGui = Instance.new("SurfaceGui")
-    surfaceGui.Face = Enum.NormalId.Top
-    surfaceGui.AlwaysOnTop = true
-    surfaceGui.Parent = currentHitboxVisual
-    
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-    frame.BackgroundTransparency = 0.8
-    frame.BorderSizePixel = 0
-    frame.Parent = surfaceGui
-
-    -- Sync with hitbox
-    local function updateVisual()
-        if currentHitboxVisual and hitbox then
-            currentHitboxVisual.Size = hitbox.Size
-            currentHitboxVisual.Position = hitbox.Position
-            currentHitboxVisual.Orientation = hitbox.Orientation
+    local football = workspace:FindFirstChild("Football")
+    if football then
+        local hitbox = football:FindFirstChild("Hitbox")
+        if hitbox then 
+            createHitboxVisual(hitbox) 
         end
     end
-
-    heartbeatConnection = RunService.Heartbeat:Connect(updateVisual)
-    currentHitboxVisual.Parent = workspace
 end
 
--- ████████ APPLY CHANGES ████████
-local function applyChanges()
-    local width = tonumber(widthBox.Text) or 5
-    local height = tonumber(heightBox.Text) or 5
+local function applyHitboxChanges()
+    local size = tonumber(sizeBox.Text) or 5
+    local newSize = Vector3.new(size, size, size)
 
-    football = workspace:FindFirstChild("Football")
+    local football = workspace:FindFirstChild("Football")
     if not football then
-        warn("Football not found!")
+        warn("El objeto 'Football' no existe en el Workspace.")
         return
     end
 
-    hitbox = football:FindFirstChild("Hitbox")
+    local hitbox = football:FindFirstChild("Hitbox")
     if not hitbox then
-        warn("Hitbox not found!")
-        return
+        hitbox = Instance.new("Part")
+        hitbox.Name = "Hitbox"
+        hitbox.Parent = football
     end
 
-    -- Update hitbox size
-    hitbox.Size = Vector3.new(width, height, width)
-    
-    -- Update visual
-    createHitboxVisual()
-    
-    -- Button feedback
-    applyButton.Text = "CHANGES APPLIED!"
+    hitbox.Size = newSize
+    hitbox.Transparency = 1
+    hitbox.CanCollide = false
+    hitbox.Anchored = false
+
+    updateAllHitboxes()
+    applyButton.Text = "¡HITBOX APLICADO!"
     task.wait(0.8)
-    applyButton.Text = "APPLY CHANGES"
+    applyButton.Text = "APLICAR HITBOX"
 end
 
-applyButton.MouseButton1Click:Connect(applyChanges)
+local function getBall()
+    local football = workspace:FindFirstChild("Football")
+    if football then
+        return football:FindFirstChild("Handle") or football:FindFirstChildOfClass("Part")
+    end
+end
 
--- ████████ TOGGLE GUI ████████
+local function autoGrabUpdate()
+    while autoGrabEnabled do
+        local character = player.Character
+        if not character then
+            warn("El jugador no tiene un personaje activo.")
+            task.wait(grabCooldown)
+            continue
+        end
+
+        local ball = getBall()
+        if not ball then
+            warn("El balón no existe en el Workspace.")
+            task.wait(grabCooldown)
+            continue
+        end
+
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if not root then
+            warn("El jugador no tiene un HumanoidRootPart.")
+            task.wait(grabCooldown)
+            continue
+        end
+
+        local ballPos = ball.Position
+        local distancia = (root.Position - ballPos).Magnitude
+
+        if distancia <= ballGrabDistance then
+            local direction = (ballPos - root.Position).Unit
+            local targetCFrame = CFrame.new(ballPos - (direction * 2.5), ballPos)
+            local _, ySize = ball.Size.Y, root.Size.Y
+            targetCFrame = targetCFrame + Vector3.new(0, ySize / 2, 0)
+            local lerpFactor = 0.5
+            if ball.Velocity.Magnitude > 100 then
+                lerpFactor = 0.8
+            end
+            root.CFrame = targetCFrame:Lerp(root.CFrame, lerpFactor)
+            ball.Velocity = Vector3.new(0, 0, 0)
+            ball.RotVelocity = Vector3.new(0, 0, 0)
+        end
+
+        task.wait(grabCooldown)
+    end
+end
+
+discordButton.MouseButton1Click:Connect(function()
+    setclipboard(discordLink)
+    StarterGui:SetCore("SendNotification", {
+        Title = "Vorg LastLine Beta",
+        Text = "Join our Discord to support us and discover more scripts!",
+        Duration = 5
+    })
+end)
+
+applyButton.MouseButton1Click:Connect(applyHitboxChanges)
+
+mobileToggle.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+    if mainFrame.Visible then
+        updateAllHitboxes()
+    end
+end)
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.H then
         mainFrame.Visible = not mainFrame.Visible
-        if mainFrame.Visible then
-            createHitboxVisual()
-        elseif currentHitboxVisual then
-            currentHitboxVisual:Destroy()
-            currentHitboxVisual = nil
-        end
+        if mainFrame.Visible then updateAllHitboxes() end
     end
 end)
 
--- Initialize
-gui.Parent = player:WaitForChild("PlayerGui")
-createHitboxVisual()
+autoGrabToggle.MouseButton1Click:Connect(function()
+    autoGrabEnabled = not autoGrabEnabled
+    autoGrabToggle.Text = autoGrabEnabled and "Auto Grab (GK): ON 🌟" or "Auto Grab (GK): OFF"
+    autoGrabToggle.BackgroundColor3 = autoGrabEnabled and Color3.fromRGB(0, 150, 50) or Color3.fromRGB(40, 40, 60)
+    if autoGrabEnabled then
+        task.spawn(autoGrabUpdate)
+    end
+end)
+
+updateAllHitboxes()
