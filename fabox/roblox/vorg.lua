@@ -9,7 +9,7 @@ if not player then
     error("No se pudo obtener el jugador local.")
 end
 local playerGui = player:WaitForChild("PlayerGui")
-print("El script de la FaBox ha iniciado correctamente.")
+print("Vorg LastLine Beta lanzado")
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "Vorg LastLine Beta"
