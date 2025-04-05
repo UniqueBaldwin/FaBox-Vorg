@@ -12,7 +12,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 print("Vorg LastLine Beta lanzado")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "Vorg LastLine Beta"
+gui.Name = "OniX LastLine Beta"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = playerGui
@@ -80,7 +80,7 @@ discordButton.Parent = titleBar
 discordButton.MouseButton1Click:Connect(function()
     setclipboard(discordLink)
     StarterGui:SetCore("SendNotification", {
-        Title = "Vorg LastLine Beta",
+        Title = "OniX LastLine Beta",
         Text = "Join our Discord to support us and discover more scripts!",
         Duration = 5
     })
@@ -97,7 +97,7 @@ local sizeLabel = Instance.new("TextLabel")
 sizeLabel.Name = "SizeLabel"
 sizeLabel.Size = UDim2.new(0.45, 0, 0, 25)
 sizeLabel.Position = UDim2.new(0, 0, 0, 0)
-sizeLabel.Text = "FaBox Size:"
+sizeLabel.Text = "HitBox Size:"
 sizeLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
 sizeLabel.TextXAlignment = Enum.TextXAlignment.Left
 sizeLabel.BackgroundTransparency = 1
@@ -145,7 +145,7 @@ local mobileToggle = Instance.new("TextButton")
 mobileToggle.Name = "MobileToggle"
 mobileToggle.Size = UDim2.new(0, 50, 0, 50)
 mobileToggle.Position = UDim2.new(0, 10, 0, 10)
-mobileToggle.Text = "⛶"
+mobileToggle.Text = "✱"
 mobileToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 mobileToggle.Font = Enum.Font.Arial
 mobileToggle.TextSize = 30
